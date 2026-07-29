@@ -31,9 +31,12 @@ with st.sidebar:
     st.title("⚙️ Settings")
     
     st.subheader("🔑 OpenRouter LLM Settings")
-    openrouter_api_key = st.text_input("OpenRouter API Key", type="password", 
-                                       help="Get your key at openrouter.ai",
-                                       value=st.secrets.get("OPENROUTER_API_KEY", os.environ.get("OPENROUTER_API_KEY", "")))
+    # Load the API key silently from environment or Streamlit secrets
+    try:
+        openrouter_api_key = st.secrets.get("OPENROUTER_API_KEY", os.environ.get("OPENROUTER_API_KEY", ""))
+    except Exception:
+        openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "")
+        
     openrouter_model = st.text_input("OpenRouter Model Name", value="meta-llama/llama-3-8b-instruct", 
                                      help="e.g. meta-llama/llama-3-8b-instruct, anthropic/claude-3-haiku, google/gemini-flash-1.5")
     
