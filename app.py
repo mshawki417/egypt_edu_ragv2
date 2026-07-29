@@ -253,7 +253,7 @@ PROMPT_BUILDERS = {"strict": build_strict_prompt, "better": build_better_prompt}
 def generate_answer(query: str, context: str, prompt_style: str = "strict") -> tuple[str, bool]:
     """Returns (answer_text, used_llm)."""
     prompt = PROMPT_BUILDERS[prompt_style](query, context)
-    api_key = os.environ.get("ANTHROPIC_API_KEY") or st.secrets.get("ANTHROPIC_API_KEY", "")
+    api_key = os.environ.get("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY", "")
     if not api_key:
         return (
             "⚠️ No API key found.  Add `ANTHROPIC_API_KEY` to your environment or "
