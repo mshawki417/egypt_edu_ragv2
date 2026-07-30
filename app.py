@@ -29,27 +29,32 @@ from backend import (
 # ══════════════════════════════════════════════════════════════════════════════
 with st.sidebar:
     st.title("⚙️ Settings")
-    
+
     st.subheader("🔑 OpenRouter LLM Settings")
-    # Load the API key silently from environment or Streamlit secrets
+
+    # Load API Key and Model from Streamlit Secrets
     try:
-        openrouter_api_key = st.secrets.get("OPENROUTER_API_KEY", os.environ.get("OPENROUTER_API_KEY", ""))
+        openrouter_api_key = st.secrets["OPENROUTER_API_KEY"]
+        openrouter_model = st.secrets["OPENROUTER_MODEL"]
     except Exception:
-        openrouter_api_key = os.environ.get("OPENROUTER_API_KEY", "")
-        
-    openrouter_model = st.text_input("OpenRouter Model Name", value="meta-llama/llama-3-8b-instruct", 
-                                     help="e.g. meta-llama/llama-3-8b-instruct, anthropic/claude-3-haiku, google/gemini-flash-1.5")
-    
+        openrouter_api_key = os.getenv("OPENROUTER_API_KEY", "")
+        openrouter_model = os.getenv("OPENROUTER_MODEL", "")
+
     st.divider()
-    
-    alpha = st.slider("Hybrid alpha (semantic weight)", 0.0, 1.0, 0.6, 0.05,
-                      help="1.0 = pure semantic, 0.0 = pure lexical")
+
+    alpha = st.slider(
+        "Hybrid alpha (semantic weight)",
+        0.0, 1.0, 0.6, 0.05,
+        help="1.0 = pure semantic, 0.0 = pure lexical"
+    )
+
     retrieval_k = st.slider("Retrieval pool size", 5, 20, 10)
     max_chunks = st.slider("Max context chunks", 1, 5, 3)
     word_budget = st.slider("Word budget", 100, 400, 200)
     prompt_style = st.selectbox("Prompt style", ["strict", "better"])
-    
+
     st.divider()
+
     st.markdown(
         "**Knowledge base:** %d documents (%d current, %d outdated)"
         % (
@@ -58,6 +63,7 @@ with st.sidebar:
             sum(1 for d in DOCUMENTS if not d["is_current"]),
         )
     )
+
     st.markdown("**Ground truth queries:** %d" % len(GROUND_TRUTH))
 
 # ══════════════════════════════════════════════════════════════════════════════
