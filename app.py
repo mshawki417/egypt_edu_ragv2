@@ -95,8 +95,9 @@ with tab_ask:
                 max_chunks=max_chunks, word_budget=word_budget,
             )
             answer, used_llm = generate_answer(
-                user_query, pkg["context_text"], prompt_style=prompt_style,
-                model_name=openrouter_model, api_key=openrouter_api_key
+                user_query,
+                pkg["context_text"],
+                prompt_style=prompt_style,
             )
 
         st.subheader("Answer")
