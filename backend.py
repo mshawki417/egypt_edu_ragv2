@@ -228,32 +228,83 @@ Context:
 PROMPT_BUILDERS = {"strict": build_strict_prompt, "better": build_better_prompt}
 
 # ── LLM call ─────────────────────────────────────────────────────────────────
-def generate_answer(query: str, context: str, prompt_style: str = "strict", model_name: str = "", api_key: str = "") -> tuple[str, bool]:
-    """Returns (answer_text, used_llm)."""
+def generate_answer(
+    query: str,
+    context: str,
+    prompt_style: str = "strict"
+) -> tuple[str, bool]:
+    """
+    Returns:
+        (answer_text, used_llm)
+    """
+
+    import streamlit as st
+
     prompt = PROMPT_BUILDERS[prompt_style](query, context)
-    
-    if not api_key or not model_name:
+
+    # Load OpenRouter configuration from Streamlit Secrets
+    try:
+        api_key = st.secrets["OPENROUTER_API_KEY"]
+
+        model_name = st.secrets.get(
+            "OPENROUTER_MODEL",
+            "openai/gpt-4o-mini"
+        )
+
+    except Exception:
         return (
-            "⚠️ No API key or Model Name provided. Please configure OpenRouter settings in the sidebar.\n\n"
-            "**Retrieved evidence (fallback):**\n\n" + context,
+            "⚠️ OpenRouter configuration missing.\n\n"
+            "Please add OPENROUTER_API_KEY and OPENROUTER_MODEL "
+            "to Streamlit Secrets.\n\n"
+            "**Retrieved evidence (fallback):**\n\n"
+            + context,
             False,
         )
-    
+
+
+    if not api_key or not model_name:
+        return (
+            "⚠️ No API key or Model Name configured.\n\n"
+            "**Retrieved evidence (fallback):**\n\n"
+            + context,
+            False,
+        )
+
+
     try:
         from openai import OpenAI
+
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
         )
-        
+
+
         response = client.chat.completions.create(
             model=model_name,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
             max_tokens=700,
+            temperature=0.2,
         )
-        return response.choices[0].message.content, True
+
+
+        answer = response.choices[0].message.content
+
+        return answer, True
+
+
     except Exception as e:
-        return (f"⚠️ Error generating answer: {str(e)}\n\n**Retrieved evidence (fallback):**\n\n{context}", False)
+        return (
+            f"⚠️ Error generating answer: {str(e)}\n\n"
+            "**Retrieved evidence (fallback):**\n\n"
+            f"{context}",
+            False,
+        )
 
 # ── Evaluation helpers ────────────────────────────────────────────────────────
 def precision_at_k(retrieved, relevant, k):
