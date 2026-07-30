@@ -30,7 +30,6 @@ from backend import (
 with st.sidebar:
     st.title("⚙️ Settings")
 
-    st.subheader("🔑 OpenRouter LLM Settings")
 
     # Load API Key and Model from Streamlit Secrets
     try:
