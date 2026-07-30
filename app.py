@@ -128,8 +128,7 @@ with tab_ask:
                     st.session_state["last_query"],
                     st.session_state["last_answer"],
                     st.session_state["last_context"],
-                    openrouter_model,
-                    openrouter_api_key
+
                 )
             st.markdown(f"```text\n{eval_result}\n```")
 
