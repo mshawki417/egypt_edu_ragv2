@@ -349,11 +349,23 @@ def run_full_eval(k: int = 3):
     return df, summary.sort_values("RR", ascending=False)
 
 # LLM Answer Evaluator
-def evaluate_answer_llm(query: str, answer: str, context: str, model_name: str, api_key: str) -> str:
+def evaluate_answer_llm(query: str, answer: str, context: str) -> str:
     """Evaluates the generated answer using an LLM-as-a-judge approach."""
+
+    import streamlit as st
+
+    try:
+        api_key = st.secrets["OPENROUTER_API_KEY"]
+        model_name = st.secrets["OPENROUTER_MODEL"]
+
+    except Exception:
+        return "⚠️ OpenRouter API Key and Model Name are required for evaluation."
+
+
     if not api_key or not model_name:
         return "⚠️ OpenRouter API Key and Model Name are required for evaluation."
-        
+
+
     prompt = f"""You are an expert evaluator. Your task is to evaluate the quality of a generated answer for a customer support question based ONLY on the provided context.
 
 Context:
@@ -366,26 +378,46 @@ Generated Answer:
 {answer}
 
 Please evaluate the answer on the following two criteria:
-1. Groundedness (Is the answer fully supported by the context? Does it avoid outside knowledge?)
-2. Relevance (Does the answer directly address the user's question?)
 
-Provide your evaluation in the following format:
+1. Groundedness:
+Is the answer fully supported by the context and does it avoid outside knowledge?
+
+2. Relevance:
+Does the answer directly address the user's question?
+
+Provide your evaluation in this format:
+
 Groundedness Score: [1-5]
+
 Relevance Score: [1-5]
-Explanation: [Brief explanation of your scores]
+
+Explanation:
+[Brief explanation of your scores]
 """
+
+
     try:
         from openai import OpenAI
+
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=api_key,
         )
-        
+
+
         response = client.chat.completions.create(
             model=model_name,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
             max_tokens=300,
         )
+
         return response.choices[0].message.content
+
+
     except Exception as e:
         return f"⚠️ Evaluation error: {str(e)}"
